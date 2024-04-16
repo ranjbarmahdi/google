@@ -236,6 +236,9 @@ async function main() {
 
                // Add Hosts To host Table
                for (let i = 0; i < hosts.length; i++) {
+                    if (i == 0) {
+                         console.log("Importing Hosts to Db");
+                    }
                     const host = hosts[i];
                     await insertHost(host);
                     await delay(250);
