@@ -16,10 +16,7 @@ CREATE TABLE problem (
 );
 
 
-CREATE TABLE host (
-    id SERIAL PRIMARY KEY,
-    host TEXT NOT NULL UNIQUE
-);
+g
 
 
 CREATE TABLE xpath (
@@ -28,4 +25,15 @@ CREATE TABLE xpath (
     hostid INTEGER NOT NULL,
     CONSTRAINT fk_host FOREIGN KEY (hostid) REFERENCES host(id),
     CONSTRAINT unique_host_xpath UNIQUE (hostid, xpath)
+);
+
+
+CREATE TABLE price (
+    id SERIAL PRIMARY KEY,
+    url TEXT NOT NULL UNIQUE,
+    xpath TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    productId INTEGER NOT NULL,
+    sellerId INTEGER NOT NULL,
+    createdAt TIMESTAMP DEFAULT NOW()
 );
