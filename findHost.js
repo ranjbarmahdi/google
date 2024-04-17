@@ -1,12 +1,8 @@
-const { getBrowser, getRandomElement, delay } = require('./utils');
+const { getBrowser, getRandomElement, delay } = require('./utils.js');
 const { URL } = require('url');
 const omitEmpty = require('omit-empty');
-const { v4: uuidv4 } = require("uuid");
-const fetch = require("node-fetch");
 const cheerio = require("cheerio");
 const db = require('./config.js');
-const path = require("path");
-const fs = require("fs");
 const os = require('os');
 
 
@@ -161,6 +157,9 @@ async function getSitesUrlFromGoogle(page, productName, url) {
           const textArea = await page.$$('textarea.gLFyf');
           if (textArea.length) {
 
+             
+
+
                // Fill Google Searchbar 
                await textArea[0].type(productName);
                await delay(2000)
@@ -224,15 +223,17 @@ async function main() {
                const randomProxy = getRandomElement(proxyList);
 
                // Lunch Browser
-               browser = await getBrowser(randomProxy, true, false);
+               browser = await getBrowser(randomProxy, false, false);
                page = await browser.newPage();
                await page.setViewport({
                     width: 1920,
                     height: 1980,
                });
 
-               const hosts = (await getSitesUrlFromGoogle(page, productName, GOOGLE)).slice(0, 10);
-
+               
+               // const hosts = (await getSitesUrlFromGoogle(page, productName, GOOGLE)).slice(0, 10);
+               const hosts = (await getSitesUrlFromGoogle(page, 'دریل شارژی میلواکی m12', GOOGLE)).slice(0, 10);
+               
 
                // Add Hosts To host Table
                for (let i = 0; i < hosts.length; i++) {
@@ -262,7 +263,6 @@ async function main() {
 
 
 }
-
 
 
 

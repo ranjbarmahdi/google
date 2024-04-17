@@ -19,6 +19,4 @@ function getHostNameFromUrl(url) {
     }
 }
 
-// console.log(isValidURL('/asdwhtdp://schat.openai.coasdsm/'));
-
-// console.log(getHostNameFromUrl('/asdwhtdp://schat.openai.coasdsm/'));
+console.log("a" > "2");
