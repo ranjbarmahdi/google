@@ -1,61 +1,125 @@
-const { getBrowser, getRandomElement, delay } = require('./utils.js');
-const { URL } = require('url');
+const { 
+     getBrowser, 
+     getRandomElement, 
+     delay, 
+     isValidURL,
+     getHostNameFromUrl,
+     checkMemoryUsage,
+     getCpuUsagePercentage
+} = require('./utils.js');
+
 const omitEmpty = require('omit-empty');
+const {db, dbv} = require('./config.js'); 
 const cheerio = require("cheerio");
-const db = require('./config.js');
 const os = require('os');
 
 
-// ============================================ checkMemoryUsage and getCpuUsagePercentage
-function checkMemoryUsage() {
-     const totalMemory = os.totalmem();
-     const usedMemory = os.totalmem() - os.freemem();
-     const memoryUsagePercent = (usedMemory / totalMemory) * 100;
-     return memoryUsagePercent;
+// ============================================ getHostByHostName
+async function getProductFromVardast(productName) {
+     const query = `
+          SELECT * FROM products p
+          WHERE p."name" = $1
+     `
+
+     try {
+          const product = await dbv.oneOrNone(query, [productName]);
+          return product;
+     } catch (error) {
+          console.log("Error in getProductFromVardast :", error);
+          return null;
+     }
 }
 
-function getCpuUsagePercentage() {
-     const cpus = os.cpus();
-     let totalIdle = 0;
-     let totalTick = 0;
 
-     cpus.forEach(cpu => {
-          for (let type in cpu.times) {
-               totalTick += cpu.times[type];
+// ============================================ removeProductName
+async function removeProductName() {
+     const existsQuery = `
+        SELECT * FROM unvisited u 
+        limit 1
+    `
+     const deleteQuery = `
+          DELETE FROM unvisited 
+          WHERE id=$1
+     `
+     try {
+          const urlRow = await db.oneOrNone(existsQuery);
+          if (urlRow) {
+               await db.query(deleteQuery, [urlRow.id])
           }
-          totalIdle += cpu.times.idle;
-     });
-
-     return ((1 - totalIdle / totalTick) * 100);
-}
-
-
-
-// ============================================ isValidURL
-function isValidURL(url) {
-     try {
-          new URL(url);
-          return true;
+          return urlRow;
      } catch (error) {
-          return false;
+          console.log("Error in removeProductName :", error);
      }
 }
 
 
-// ============================================ getHostNameFromUrl
-function getHostNameFromUrl(url) {
+// ============================================ insertHost
+async function insertPrice(input) {
+     const existsQuery = `
+          SELECT * FROM price p
+          where p."url" = $1 and p."xpath" = $2 and p."amount" = $3 and p."productid" = $4 and p."sellerid" = $5 
+     `
+
+     const query = `
+          insert into price ("url", "xpath", "amount", "productid", "sellerid")
+          values($1, $2, $3, $4, $5);
+     `;
+
      try {
-          const parsedUrl = new URL(url);
-          return parsedUrl.hostname;
+          const price = await db.oneOrNone(existsQuery, input);
+          if (!price) {
+               const result = await db.oneOrNone(query, input);
+               return result;
+          }
      } catch (error) {
-          console.error("Invalid URL:", error);
-          return '';
+          console.log("Error in insertPrice :", error.message);
      }
+}
+
+
+// ============================================ getHostByHostName
+async function getHostByHostName(hostName) {
+     const query = `
+          SELECT * FROM host h
+          WHERE h."host" = $1
+     `
+
+     try {
+          const host = await db.oneOrNone(query, [hostName]);
+          return host;
+     } catch (error) {
+          console.log("Error in removeProductName :", error);
+          return null;
+     }
+}
+
+
+// ============================================ getHostXpath
+async function getHostXpath(url) {
+     let xpaths = [];
+     try {
+          // Extract Host Name From Url
+          const hostName = getHostNameFromUrl(url);
+          const findXpathQuery = `
+               select distinct x."xpath"
+               from host h
+               join xpath x on h."id" = x."hostid"
+               where h."host" = $1 
+          ` 
+
+          xpaths = await db.any(findXpathQuery, [hostName]);
+     } catch (error) {
+          console.log("Error In getHostXpath :", error);
+     }
+     finally {
+          return xpaths;
+     }
+
 }
 
 
 // ============================================ getSitesUrlFromGoogle
-async function getSitesUrlsFromGoogle(browser, productName, url) {
+async function getProductUrlsFromGoogle(browser, productName, url) {
      let productUrls = [];
      let page;
      try {
@@ -63,8 +127,8 @@ async function getSitesUrlsFromGoogle(browser, productName, url) {
           // Open New Page
           page = await browser.newPage();
           await page.setViewport({
-               width: 1920,
-               height: 1980,
+               width: 1440,
+               height: 810,
           });
 
           // Go To Url
@@ -99,7 +163,7 @@ async function getSitesUrlsFromGoogle(browser, productName, url) {
           }
 
      } catch (error) {
-          console.log("Error In getSitesUrlsFromGoogle :", error);
+          console.log("Error In getProductUrlsFromGoogle :", error);
           await insertToProblem(productName);
      }
      finally {
@@ -110,56 +174,46 @@ async function getSitesUrlsFromGoogle(browser, productName, url) {
 }
 
 
-// ============================================ getHostXpath
-async function getHostXpath(url) {
-     let xpaths = [];
-     try {
-          // Extract Host Name From Url
-          const hostName = getHostNameFromUrl(url);
-          const findXpathQuery = `
-               select distinct x."xpath"
-               from host h
-               join xpath x on h."id" = x."hostid"
-               where h."host" = $1 
-          ` 
 
-          xpaths = await db.any(findXpathQuery, [hostName]);
-     } catch (error) {
-          console.log("Error In getHostXpath :", error);
-     }
-     finally {
-          return xpaths;
-     }
-
-}
-
-
-// ============================================ getSitesUrlFromGoogle
+// ============================================ getPrice
 async function getPrice(browser, xpaths, productUrl) {
-     let price = 0;
+     let price = Infinity;
      let xpath = '';
      let page;
      try {
 
+          if(xpaths.length == 0){
+               return [price, xpath];
+          }
+
           // Open New Page
           page = await browser.newPage();
           await page.setViewport({
-               width: 1920,
-               height: 1980,
+               width: 1440,
+               height: 810,
           });
 
+          
           // Go To Url
           await page.goto(productUrl, { timeout: 180000 });
           await delay(2000);
 
+
           // Find Price 
-          for (const xpath of xpaths) {
-               const priceElements = await page.$x(xpath);
-               if (priceElements.length) {
-                    const priceText = await page.evaluate((elem) => elem.textContent?.replace(/[^\u06F0-\u06F90-9]/g, ""), priceElements[0]);
-                    console.log(priceText);
+          for (const _xpath of xpaths) {
+               try {
+                    const priceElements = await page.$x(_xpath);
+                    if (priceElements.length) {
+                         const priceText = await page.evaluate((elem) => elem.textContent?.replace(/[^\u06F0-\u06F90-9]/g, ""), priceElements[0]);
+                         const priceNumber = Number(priceText);
+                         if(priceNumber < price){
+                              price = priceNumber;
+                              xpath = _xpath;
+                         }
+                    }
+               } catch (error) {
+                    console.log("Error in getPrice Function Foor Loop :", error.message);
                }
-               
           }
 
      } catch (error) {
@@ -167,9 +221,55 @@ async function getPrice(browser, xpaths, productUrl) {
           await insertToProblem(productName);
      }
      finally {
-          await page.close();
-          return price;
+          if(page){
+               await page.close();
+          }
+          return [price, xpath];
      }
+
+}
+
+
+// ============================================ proccessProductUrl
+async function proccessProductUrl(browser, productUrl, productName) {
+     try {
+          // Extract Host Name From Url 
+          const hostName = getHostNameFromUrl(productUrl);
+
+          // Get Host From DB
+          const {sellername, sellerid} = await getHostByHostName(hostName) || {};
+          
+          if(sellerid){
+               // Find Xpath
+               const xpaths = (await getHostXpath(productUrl)).map(row => row?.xpath);
+
+               // Find Price
+               const [amount, xpath] = await getPrice(browser, xpaths, productUrl);
+               console.log("Price :", amount);
+
+
+               // Check Price Is Finite and Not 0
+               if(isFinite(amount) && amount != 0){
+
+                    // Find Prodcut id From Vardast DB
+                    const {id: productId} = await getProductFromVardast(productName) || {};
+                    
+                    // Insert Price If Product Exists
+                    if(productId){
+                         const priceTableInput = [productUrl, xpath, amount, productId, sellerid];
+                         await insertPrice(priceTableInput);
+                    }
+               }
+               
+          }
+
+          
+
+     } catch (error) {
+          console.log("Error In proccessProductUrl :", error);
+          // await insertToProblem(productName);
+     }
+
 
 }
 
@@ -183,34 +283,37 @@ async function main() {
 
           // Get Product Name From Db And Remove it From Unvisited
           // product = await removeProductName();
-          product = 'دریل شارژی میلواکی m12';
+          product = 'تیرآهن یزدی IPE22';
           
           if (product) {
                // const productName = product.name;
-               const productName = 'دریل شارژی میلواکی m12';
-               console.log(`\n======================== Start Search For : \n${productName}`);
+               const productName = 'تیرآهن یزدی IPE22';
+               console.log(`\n======================== Start Search For : ${productName}`);
 
 
                // get random proxy
                const proxyList = [''];
                const randomProxy = getRandomElement(proxyList);
 
+
                // Lunch Browser
                browser = await getBrowser(randomProxy, false, false);
 
+
                // Find Product Urls 
-               const validProductUrls = (await getSitesUrlsFromGoogle(browser, productName, GOOGLE)).slice(0, 10);
+               const validProductUrls = (await getProductUrlsFromGoogle(browser, productName, GOOGLE)).slice(0, 10);
                await(delay(2000))
                
+
+               // Start Proccess To Find Price
                for (let i = 0; i < validProductUrls.length; i++){
                     const productUrl = validProductUrls[i];
-                    const xpaths = (await getHostXpath(productUrl)).map(row => row?.xpath);
-                    await getPrice(browser, xpaths, productUrl);
+                    await proccessProductUrl(browser, productUrl, productName);
                }
 
                
 
-               // // Add Hosts To host Table
+               // Add Hosts To host Table
                // for (let i = 0; i < hosts.length; i++) {
                //      if (i == 0) {
                //           console.log("Importing Hosts to Db");
@@ -257,7 +360,7 @@ else {
      console.log(status);
 }
 
-// main()
+
 
 
 

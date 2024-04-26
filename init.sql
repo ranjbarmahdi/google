@@ -16,9 +16,6 @@ CREATE TABLE problem (
 );
 
 
-g
-
-
 CREATE TABLE xpath (
     id SERIAL PRIMARY KEY,
     xpath TEXT NOT NULL,
@@ -35,5 +32,7 @@ CREATE TABLE price (
     amount INTEGER NOT NULL,
     productId INTEGER NOT NULL,
     sellerId INTEGER NOT NULL,
-    createdAt TIMESTAMP DEFAULT NOW()
+    createdAt TIMESTAMP DEFAULT NOW(),
+    CONSTRAINT unique_combination UNIQUE (amount, productId, sellerId)
 );
+

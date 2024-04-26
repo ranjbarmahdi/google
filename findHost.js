@@ -1,33 +1,18 @@
-const { getBrowser, getRandomElement, delay } = require('./utils.js');
+const { 
+     getBrowser, 
+     getRandomElement, 
+     delay, 
+     isValidURL,
+     getHostNameFromUrl,
+     checkMemoryUsage,
+     getCpuUsagePercentage
+} = require('./utils.js');
+     
 const { URL } = require('url');
 const omitEmpty = require('omit-empty');
 const cheerio = require("cheerio");
 const db = require('./config.js');
 const os = require('os');
-
-
-// ============================================ checkMemoryUsage and getCpuUsagePercentage
-function checkMemoryUsage() {
-     const totalMemory = os.totalmem();
-     const usedMemory = os.totalmem() - os.freemem();
-     const memoryUsagePercent = (usedMemory / totalMemory) * 100;
-     return memoryUsagePercent;
-}
-
-function getCpuUsagePercentage() {
-     const cpus = os.cpus();
-     let totalIdle = 0;
-     let totalTick = 0;
-
-     cpus.forEach(cpu => {
-          for (let type in cpu.times) {
-               totalTick += cpu.times[type];
-          }
-          totalIdle += cpu.times.idle;
-     });
-
-     return ((1 - totalIdle / totalTick) * 100);
-}
 
 
 // ============================================ removeProductName
@@ -124,30 +109,8 @@ async function insertToVisited(name) {
 }
 
 
-// ============================================ isValidURL
-function isValidURL(url) {
-     try {
-          new URL(url);
-          return true;
-     } catch (error) {
-          return false;
-     }
-}
-
-
-// ============================================ getHostNameFromUrl
-function getHostNameFromUrl(url) {
-     try {
-          const parsedUrl = new URL(url);
-          return parsedUrl.hostname;
-     } catch (error) {
-          console.error("Invalid URL:", error);
-          return '';
-     }
-}
-
-// ============================================ getSitesUrlFromGoogle
-async function getSitesUrlFromGoogle(page, productName, url) {
+// ============================================ getProductUrlsFromGoogle
+async function getProductUrlsFromGoogle(page, productName, url) {
      let UniqueHosts = [];
      try {
           await page.goto(url, { timeout: 180000 });
@@ -192,7 +155,7 @@ async function getSitesUrlFromGoogle(page, productName, url) {
 
 
      } catch (error) {
-          console.log("Error In getSitesUrlFromGoogle :", error);
+          console.log("Error In getProductUrlsFromGoogle :", error);
           await insertToProblem(productName);
      }
      finally {
@@ -212,7 +175,6 @@ async function main() {
 
           // Get Product Name From Db And Remove it From Unvisited
           product = await removeProductName();
-
           if (product) {
                const productName = product.name;
                console.log(`\n======================== Start Search For : \n${productName}`);
@@ -222,17 +184,18 @@ async function main() {
                const proxyList = [''];
                const randomProxy = getRandomElement(proxyList);
 
+
                // Lunch Browser
-               browser = await getBrowser(randomProxy, false, false);
+               browser = await getBrowser(randomProxy, true, false);
                page = await browser.newPage();
                await page.setViewport({
-                    width: 1920,
-                    height: 1980,
+                    width: 1440,
+                    height: 810,
                });
 
                
-               // const hosts = (await getSitesUrlFromGoogle(page, productName, GOOGLE)).slice(0, 10);
-               const hosts = (await getSitesUrlFromGoogle(page, 'دریل شارژی میلواکی m12', GOOGLE)).slice(0, 10);
+               // Find Hosts
+               const hosts = (await getProductUrlsFromGoogle(page, productName, GOOGLE)).slice(0, 10);
                
 
                // Add Hosts To host Table
@@ -266,26 +229,44 @@ async function main() {
 
 
 
+
+
 let usageMemory = (os.totalmem() - os.freemem()) / (1024 * 1024 * 1024);
 let memoryUsagePercentage = checkMemoryUsage();
 let cpuUsagePercentage = getCpuUsagePercentage();
 
-if (memoryUsagePercentage <= 85 && cpuUsagePercentage <= 80 && usageMemory <= 28) {
-     main();
+// if (memoryUsagePercentage <= 85 && cpuUsagePercentage <= 80 && usageMemory <= 28) {
+//      main();
+// }
+// else {
+//      const status = `status:
+//      memory usage = ${usageMemory}
+//      percentage of memory usage = ${memoryUsagePercentage}
+//      percentage of cpu usage = ${cpuUsagePercentage}\n`
+
+//      console.log("main function does not run.\n");
+//      console.log(status);
+// }
+
+
+async function main_2(){
+     for(let i = 0; i < 95; i++){
+          if (memoryUsagePercentage <= 70 && cpuUsagePercentage <= 50 && usageMemory <= 12) {
+               await main();
+          }
+          else {
+               const status = `status:
+               memory usage = ${usageMemory}
+               percentage of memory usage = ${memoryUsagePercentage}
+               percentage of cpu usage = ${cpuUsagePercentage}\n`
+          
+               console.log("main function does not run.\n");
+               console.log(status);
+          }
+          await delay(1000);
+     }
 }
-else {
-     const status = `status:
-     memory usage = ${usageMemory}
-     percentage of memory usage = ${memoryUsagePercentage}
-     percentage of cpu usage = ${cpuUsagePercentage}\n`
-
-     console.log("main function does not run.\n");
-     console.log(status);
-}
-
-// main()
 
 
 
-
-
+main_2();

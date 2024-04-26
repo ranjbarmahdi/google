@@ -1,10 +1,11 @@
 const { createObjectCsvWriter } = require("csv-writer")
 const puppeteer = require("puppeteer");
 const csv = require('csv-parser');
+const { URL } = require('url');
 const reader = require('xlsx');
 const path = require('path');
 const fs = require('fs');
-
+const os = require('os');
 
 // ==================================== writeExcel
 function writeExcel(jsonFile, excelDir) {
@@ -206,6 +207,7 @@ const getBrowser = async (proxyServer, headless = true, withProxy = true) => {
     }
 }
 
+
 // ============================================ delay
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -220,6 +222,54 @@ function shuffleArray(array) {
 }
 
 
+// ============================================ isValidURL
+function isValidURL(url) {
+    try {
+         new URL(url);
+         return true;
+    } catch (error) {
+         return false;
+    }
+}
+
+
+// ============================================ getHostNameFromUrl
+function getHostNameFromUrl(url) {
+    try {
+         const parsedUrl = new URL(url);
+         return parsedUrl.hostname;
+    } catch (error) {
+         console.error("Invalid URL:", error);
+         return '';
+    }
+}
+
+
+// ============================================ checkMemoryUsage 
+function checkMemoryUsage() {
+    const totalMemory = os.totalmem();
+    const usedMemory = os.totalmem() - os.freemem();
+    const memoryUsagePercent = (usedMemory / totalMemory) * 100;
+    return memoryUsagePercent;
+}
+
+
+// ============================================ getCpuUsagePercentage
+function getCpuUsagePercentage() {
+    const cpus = os.cpus();
+    let totalIdle = 0;
+    let totalTick = 0;
+
+    cpus.forEach(cpu => {
+         for (let type in cpu.times) {
+              totalTick += cpu.times[type];
+         }
+         totalIdle += cpu.times.idle;
+    });
+
+    return ((1 - totalIdle / totalTick) * 100);
+}
+
 module.exports = {
     writeExcel,
     readCsv,
@@ -231,7 +281,11 @@ module.exports = {
     convertToEnglishNumber,
     getBrowser,
     delay,
-    shuffleArray
+    shuffleArray,
+    isValidURL,
+    getHostNameFromUrl,
+    checkMemoryUsage,
+    getCpuUsagePercentage
 }
 
 
