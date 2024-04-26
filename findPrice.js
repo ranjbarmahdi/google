@@ -176,7 +176,7 @@ async function getProductUrlsFromGoogle(browser, productName, url) {
 
 
 // ============================================ getPrice
-async function getPrice(browser, xpaths, productUrl) {
+async function getPrice(browser, xpaths, productUrl, currency) {
      let price = Infinity;
      let xpath = '';
      let page;
@@ -205,7 +205,7 @@ async function getPrice(browser, xpaths, productUrl) {
                     const priceElements = await page.$x(_xpath);
                     if (priceElements.length) {
                          const priceText = await page.evaluate((elem) => elem.textContent?.replace(/[^\u06F0-\u06F90-9]/g, ""), priceElements[0]);
-                         const priceNumber = Number(priceText);
+                         let priceNumber = currency ? (Number(priceText) / 10) : Number(priceText);
                          if(priceNumber < price){
                               price = priceNumber;
                               xpath = _xpath;
@@ -237,14 +237,15 @@ async function proccessProductUrl(browser, productUrl, productName) {
           const hostName = getHostNameFromUrl(productUrl);
 
           // Get Host From DB
-          const {sellername, sellerid} = await getHostByHostName(hostName) || {};
+          const {sellername, sellerid, currency} = await getHostByHostName(hostName) || {};
           
           if(sellerid){
+               console.log(sellername, sellerid, currency);
                // Find Xpath
                const xpaths = (await getHostXpath(productUrl)).map(row => row?.xpath);
 
                // Find Price
-               const [amount, xpath] = await getPrice(browser, xpaths, productUrl);
+               const [amount, xpath] = await getPrice(browser, xpaths, productUrl, currency);
                console.log("Price :", amount);
 
 
