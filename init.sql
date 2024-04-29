@@ -15,6 +15,13 @@ CREATE TABLE problem (
     name TEXT NOT NULL UNIQUE
 );
 
+CREATE TABLE host (
+	id SERIAL PRIMARY KEY,
+	host TEXT NOT NULL UNIQUE,
+	sellername text NULL,
+	sellerid int4 NULL,
+	currency bool NULL,
+);
 
 CREATE TABLE xpath (
     id SERIAL PRIMARY KEY,

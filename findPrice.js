@@ -283,12 +283,10 @@ async function main() {
           const GOOGLE = 'https://www.google.com/'
 
           // Get Product Name From Db And Remove it From Unvisited
-          // product = await removeProductName();
-          product = 'تیرآهن یزدی IPE22';
+          product = await removeProductName();
           
           if (product) {
-               // const productName = product.name;
-               const productName = 'تیرآهن یزدی IPE22';
+               const productName = product.name;
                console.log(`\n======================== Start Search For : ${productName}`);
 
 
@@ -298,7 +296,7 @@ async function main() {
 
 
                // Lunch Browser
-               browser = await getBrowser(randomProxy, false, false);
+               browser = await getBrowser(randomProxy, true, false);
 
 
                // Find Product Urls 
@@ -343,27 +341,45 @@ async function main() {
 }
 
 
+// let usageMemory = (os.totalmem() - os.freemem()) / (1024 * 1024 * 1024);
+// let memoryUsagePercentage = checkMemoryUsage();
+// let cpuUsagePercentage = getCpuUsagePercentage();
 
-let usageMemory = (os.totalmem() - os.freemem()) / (1024 * 1024 * 1024);
-let memoryUsagePercentage = checkMemoryUsage();
-let cpuUsagePercentage = getCpuUsagePercentage();
+// if (memoryUsagePercentage <= 85 && cpuUsagePercentage <= 80 && usageMemory <= 28) {
+//      main();
+// }
+// else {
+//      const status = `status:
+//      memory usage = ${usageMemory}
+//      percentage of memory usage = ${memoryUsagePercentage}
+//      percentage of cpu usage = ${cpuUsagePercentage}\n`
 
-if (memoryUsagePercentage <= 85 && cpuUsagePercentage <= 80 && usageMemory <= 28) {
-     main();
+//      console.log("main function does not run.\n");
+//      console.log(status);
+// }
+
+
+async function main_2(){
+     for(let i = 0; i <= 25; i++){
+          let usageMemory = (os.totalmem() - os.freemem()) / (1024 * 1024 * 1024);
+          let memoryUsagePercentage = checkMemoryUsage();
+          let cpuUsagePercentage = getCpuUsagePercentage();
+
+          if (memoryUsagePercentage <= 85 && cpuUsagePercentage <= 80 && usageMemory <= 28) {
+               await main();
+          }
+          else {
+               const status = `status:
+               memory usage = ${usageMemory}
+               percentage of memory usage = ${memoryUsagePercentage}
+               percentage of cpu usage = ${cpuUsagePercentage}\n`
+
+               console.log("main function does not run.\n");
+               console.log(status);
+          }
+          await delay(1000);
+     }
 }
-else {
-     const status = `status:
-     memory usage = ${usageMemory}
-     percentage of memory usage = ${memoryUsagePercentage}
-     percentage of cpu usage = ${cpuUsagePercentage}\n`
 
-     console.log("main function does not run.\n");
-     console.log(status);
-}
-
-
-
-
-
-
+main_2()
 
