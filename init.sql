@@ -43,3 +43,19 @@ CREATE TABLE price (
     CONSTRAINT unique_combination UNIQUE (amount, productId, sellerId)
 );
 
+
+-- if need
+CREATE TABLE bot_price (
+    id SERIAL PRIMARY KEY,
+    sellerid INT NOT NULL,
+    productid INT NOT NULL,
+    brandid INT NOT NULL,
+    url TEXT NOT NULL,
+    price_xpath TEXT NOT NULL,
+    name TEXT NOT NULL,
+    sku TEXT NOT NULL,
+    currency BOOLEAN NOT NULL,
+    CONSTRAINT unique_combination UNIQUE (sellerid, productid, url)
+);
+
+
