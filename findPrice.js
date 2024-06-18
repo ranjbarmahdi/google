@@ -5,7 +5,8 @@ const {
      isValidURL,
      getHostNameFromUrl,
      checkMemoryUsage,
-     getCpuUsagePercentage
+     getCpuUsagePercentage,
+     convertToEnglishNumber
 } = require('./utils.js');
 
 const omitEmpty = require('omit-empty');
@@ -104,10 +105,12 @@ async function getHostXpath(url) {
                select distinct x."xpath"
                from host h
                join xpath x on h."id" = x."hostid"
-               where h."host" = $1 
+               where h."host" = $1
+               
           ` 
 
           xpaths = await db.any(findXpathQuery, [hostName]);
+          console.log('xpaths :', xpaths);
      } catch (error) {
           console.log("Error In getHostXpath :", error);
      }
@@ -181,6 +184,7 @@ async function getPrice(browser, xpaths, productUrl, currency) {
      let xpath = '';
      let page;
      try {
+          console.log("number of xpath :", xpaths.length);
 
           if(xpaths.length == 0){
                return [price, xpath];
@@ -204,9 +208,11 @@ async function getPrice(browser, xpaths, productUrl, currency) {
                try {
                     const priceElements = await page.$x(_xpath);
                     if (priceElements.length) {
-                         const priceText = await page.evaluate((elem) => elem.textContent?.replace(/[^\u06F0-\u06F90-9]/g, ""), priceElements[0]);
+                         let priceText = await page.evaluate((elem) => elem.textContent?.replace(/[^\u06F0-\u06F90-9]/g, ""), priceElements[0]);
+                         priceText = convertToEnglishNumber(priceText);
                          let priceNumber = currency ? (Number(priceText) / 10) : Number(priceText);
-                         if(priceNumber < price){
+                         
+                         if((priceNumber < price) && (priceNumber !== 0)){
                               price = priceNumber;
                               xpath = _xpath;
                          }
@@ -243,23 +249,27 @@ async function proccessProductUrl(browser, productUrl, productName) {
                console.log(sellername, sellerid, currency);
                // Find Xpath
                const xpaths = (await getHostXpath(productUrl)).map(row => row?.xpath);
-
-               // Find Price
-               const [amount, xpath] = await getPrice(browser, xpaths, productUrl, currency);
-               console.log("Price :", amount);
-
-
-               // Check Price Is Finite and Not 0
-               if(isFinite(amount) && amount != 0){
-
-                    // Find Prodcut id From Vardast DB
-                    const {id: productId} = await getProductFromVardast(productName) || {};
-                    
-                    // Insert Price If Product Exists
-                    if(productId){
-                         const priceTableInput = [productUrl, xpath, amount, productId, sellerid];
-                         await insertPrice(priceTableInput);
+             
+               // If Host Has Xpaths, Get Its Price
+               if (xpaths.length) {
+                    // Find Price
+                    const [amount, xpath] = await getPrice(browser, xpaths, productUrl, currency);
+                    console.log("Price :", amount);
+     
+     
+                    // Check Price Is Finite and Not 0
+                    if(isFinite(amount) && amount != 0){
+     
+                         // Find Prodcut id From Vardast DB
+                         const {id: productId} = await getProductFromVardast(productName) || {};
+                         
+                         // Insert Price If Product Exists
+                         if(productId){
+                              const priceTableInput = [productUrl, xpath, amount, productId, sellerid];
+                              await insertPrice(priceTableInput);
+                         }
                     }
+                    
                }
                
           }
@@ -296,7 +306,7 @@ async function main() {
 
 
                // Lunch Browser
-               browser = await getBrowser(randomProxy, true, false);
+               browser = await getBrowser(randomProxy, false, false);
 
 
                // Find Product Urls 
@@ -360,7 +370,7 @@ async function main() {
 
 
 async function main_2(){
-     for(let i = 0; i <= 25; i++){
+     for(let i = 1; i <= 25; i++){
           let usageMemory = (os.totalmem() - os.freemem()) / (1024 * 1024 * 1024);
           let memoryUsagePercentage = checkMemoryUsage();
           let cpuUsagePercentage = getCpuUsagePercentage();
@@ -383,3 +393,4 @@ async function main_2(){
 
 main_2()
 
+// main();
