@@ -11,7 +11,7 @@ const {
 const { URL } = require('url');
 const omitEmpty = require('omit-empty');
 const cheerio = require("cheerio");
-const db = require('./config.js');
+const {db, dbv} = require('./config.js');
 const os = require('os');
 
 
@@ -19,6 +19,7 @@ const os = require('os');
 async function removeProductName() {
      const existsQuery = `
         SELECT * FROM unvisited u 
+        ORDER BY "id" ASC
         limit 1
     `
      const deleteQuery = `
@@ -120,9 +121,6 @@ async function getProductUrlsFromGoogle(page, productName, url) {
           const textArea = await page.$$('textarea.gLFyf');
           if (textArea.length) {
 
-             
-
-
                // Fill Google Searchbar 
                await textArea[0].type(productName);
                await delay(2000)
@@ -195,7 +193,7 @@ async function main() {
 
                
                // Find Hosts
-               const hosts = (await getProductUrlsFromGoogle(page, productName, GOOGLE)).slice(0, 10);
+               const hosts = (await getProductUrlsFromGoogle(page, productName, GOOGLE)).slice(0, 5);
                
 
                // Add Hosts To host Table
@@ -219,8 +217,12 @@ async function main() {
      finally {
           // Close page and browser
           console.log("End");
-          await page.close();
-          await browser.close();
+          if(page){
+               await page.close();
+          }
+          if(browser){
+               await browser.close();
+          }
           await delay(1000);
      }
 
@@ -251,7 +253,7 @@ let cpuUsagePercentage = getCpuUsagePercentage();
 
 async function main_2(){
      for(let i = 0; i < 95; i++){
-          if (memoryUsagePercentage <= 70 && cpuUsagePercentage <= 50 && usageMemory <= 12) {
+          if (memoryUsagePercentage <= 80 && cpuUsagePercentage <= 70 && usageMemory <= 14) {
                await main();
           }
           else {
@@ -267,6 +269,4 @@ async function main_2(){
      }
 }
 
-
-
-main_2();
+main();
