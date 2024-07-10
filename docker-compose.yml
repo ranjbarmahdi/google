@@ -3,7 +3,7 @@ version: '3.7'
 services:
   node-app:
     user: root
-    restart: always
+    # restart: always
     build:
       context: .
     ports:
