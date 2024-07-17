@@ -194,7 +194,7 @@ const getBrowser = async (proxyServer, headless = true, withProxy = true) => {
                 return ["--no-sandbox", "--disable-setuid-sandbox"]
             }
         }
-        console.log('arg',args(withProxy))
+        
         // Lunch Browser
         const browser = await puppeteer.launch({
             headless: headless, // Set to true for headless mode, false for non-headless
