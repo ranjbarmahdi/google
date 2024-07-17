@@ -198,7 +198,7 @@ async function getProductUrlsFromGoogle(browser, productName, url) {
      let productUrls = [];
      let page;
      try {
-
+          console.log("before newPage");
           // Open New Page
           page = await browser.newPage();
           await page.setViewport({
@@ -435,12 +435,11 @@ async function main() {
                // get random proxy
                const proxyList = ['37.114.204.14:8080'];
                const randomProxy = getRandomElement(proxyList);
-
-
+               console.log('proxy ',randomProxy)
                // Lunch Browser
-               browser = await getBrowser(randomProxy, true, true);
+               browser = await getBrowser(randomProxy, true, false);
 
-               
+               console.log('length browser ',browser.length)
 
                // Find Product Urls 
                const validProductUrls = (await getProductUrlsFromGoogle(browser, productName, GOOGLE)).slice(0, 10);

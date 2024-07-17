@@ -187,7 +187,7 @@ const getBrowser = async (proxyServer, headless = true, withProxy = true) => {
     try {
         const args = (withProxy) => {
             if (withProxy == true) {
-                console.log("terue");
+                console.log("with proxy");
                 return ["--no-sandbox", "--disable-setuid-sandbox", `--proxy-server=${proxyServer}`]
             }
             else {
