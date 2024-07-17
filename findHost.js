@@ -186,7 +186,7 @@ async function main() {
 
 
                // Lunch Browser
-               browser = await getBrowser(randomProxy, false, false);
+               browser = await getBrowser(randomProxy, true, false);
                page = await browser.newPage();
                await page.setViewport({
                     width: 1440,
@@ -236,36 +236,36 @@ let usageMemory = (os.totalmem() - os.freemem()) / (1024 * 1024 * 1024);
 let memoryUsagePercentage = checkMemoryUsage();
 let cpuUsagePercentage = getCpuUsagePercentage();
 
-// if (memoryUsagePercentage <= 85 && cpuUsagePercentage <= 80 && usageMemory <= 28) {
-//      main();
-// }
-// else {
-//      const status = `status:
-//      memory usage = ${usageMemory}
-//      percentage of memory usage = ${memoryUsagePercentage}
-//      percentage of cpu usage = ${cpuUsagePercentage}\n`
+if (memoryUsagePercentage <= 85 && cpuUsagePercentage <= 80 && usageMemory <= 28) {
+     main();
+}
+else {
+     const status = `status:
+     memory usage = ${usageMemory}
+     percentage of memory usage = ${memoryUsagePercentage}
+     percentage of cpu usage = ${cpuUsagePercentage}\n`
 
-//      console.log("main function does not run.\n");
-//      console.log(status);
-// }
-
-
-async function main_2(){
-     for(let i = 0; i < 95; i++){
-          if (memoryUsagePercentage <= 80 && cpuUsagePercentage <= 70 && usageMemory <= 14) {
-               await main();
-          }
-          else {
-               const status = `status:
-               memory usage = ${usageMemory}
-               percentage of memory usage = ${memoryUsagePercentage}
-               percentage of cpu usage = ${cpuUsagePercentage}\n`
-          
-               console.log("main function does not run.\n");
-               console.log(status);
-          }
-          await delay(1000);
-     }
+     console.log("main function does not run.\n");
+     console.log(status);
 }
 
-main_2();
+
+// async function main_2(){
+//      for(let i = 0; i < 95; i++){
+//           if (memoryUsagePercentage <= 80 && cpuUsagePercentage <= 70 && usageMemory <= 14) {
+//                await main();
+//           }
+//           else {
+//                const status = `status:
+//                memory usage = ${usageMemory}
+//                percentage of memory usage = ${memoryUsagePercentage}
+//                percentage of cpu usage = ${cpuUsagePercentage}\n`
+          
+//                console.log("main function does not run.\n");
+//                console.log(status);
+//           }
+//           await delay(1000);
+//      }
+// }
+
+// main_2();
