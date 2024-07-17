@@ -20,7 +20,7 @@ RUN npm install
 COPY . .
 
 # Expose port 3020 for your Node.js application
-EXPOSE 5050
+EXPOSE 4008
 
 # Change the CMD to run your desired Node.js script
-CMD ["node","findPrice.js"]
+CMD ["node","app.js"]
