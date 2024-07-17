@@ -215,6 +215,7 @@ async function getProductUrlsFromGoogle(browser, productName, url) {
 
           // Find Google Search Bar
           const textArea = await page.$$('textarea.gLFyf');
+          console.log("textArea length : ", textArea.length);
           if (textArea.length) {
 
                // Fill Google Searchbar 
