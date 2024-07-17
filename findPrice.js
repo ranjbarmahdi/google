@@ -250,6 +250,7 @@ async function getProductUrlsFromGoogle(browser, productName, url) {
      }
      finally {
           await page.close();
+          console.log("productUrls : ", productUrls);
           return productUrls;
      }
 
@@ -439,10 +440,11 @@ async function main() {
                // Lunch Browser
                browser = await getBrowser(randomProxy, true, false);
 
-               console.log('length browser ',browser.length)
 
                // Find Product Urls 
+
                const validProductUrls = (await getProductUrlsFromGoogle(browser, productName, GOOGLE)).slice(0, 10);
+               
                await(delay(2000))
                
 
