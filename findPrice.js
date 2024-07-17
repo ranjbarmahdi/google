@@ -221,11 +221,14 @@ async function getProductUrlsFromGoogle(browser, productName, url) {
                // Fill Google Searchbar 
                await textArea[0].type(productName);
                await delay(2000);
+               console.log("After Type");
 
                await page.screenshot({ path: './afterType.png' });
 
                // Press Enter
                await page.keyboard.press('Enter');
+               console.log("After Ener");
+
                await delay(5000)
 
                await page.screenshot({ path: './afterEnter.png' });
