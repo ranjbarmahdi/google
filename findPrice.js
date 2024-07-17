@@ -220,7 +220,7 @@ async function getProductUrlsFromGoogle(browser, productName, url) {
 
                // Fill Google Searchbar 
                await textArea[0].type(productName);
-               await delay(2000)
+               await delay(2000);
 
                await page.screenshot({ path: './afterType.png' });
 
