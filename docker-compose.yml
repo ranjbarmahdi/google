@@ -7,7 +7,7 @@ services:
     build:
       context: .
     ports:
-      - "4000-4500:4008"
+      - "5050:5050"
     volumes:
       - ./images:/usr/src/app/images
     networks:
