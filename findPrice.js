@@ -198,40 +198,31 @@ async function getProductUrlsFromGoogle(browser, productName, url) {
      let productUrls = [];
      let page;
      try {
-          console.log("before newPage");
+
           // Open New Page
           page = await browser.newPage();
           await page.setViewport({
                width: 1440,
                height: 810,
           });
-          console.log("before goto");
+
           // Go To Url
           await page.goto(url, { timeout: 180000 });
           await delay(5000);
 
-          console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-          await page.screenshot({ path: './beforeType.png' });
 
           // Find Google Search Bar
           const textArea = await page.$$('textarea.gLFyf');
-          console.log("textArea length : ", textArea.length);
           if (textArea.length) {
 
                // Fill Google Searchbar 
                await textArea[0].type(productName);
                await delay(2000);
-               console.log("After Type");
-
-               await page.screenshot({ path: './afterType.png' });
 
                // Press Enter
                await page.keyboard.press('Enter');
-               console.log("After Ener");
-
                await delay(5000)
 
-               await page.screenshot({ path: './afterEnter.png' });
 
                // Load Cheerio
                const html = await page.content();
@@ -254,7 +245,6 @@ async function getProductUrlsFromGoogle(browser, productName, url) {
      }
      finally {
           await page.close();
-          console.log("productUrls : ", productUrls);
           return productUrls;
      }
 
@@ -366,42 +356,40 @@ async function proccessProductUrl(browser, productUrl, productName) {
                }
 
                // If Host Has Images Xpaths, Download Its Image
-               const image_xpaths = (await getHostImageXpath(productUrl)).map(row => row?.xpath);
+               // const image_xpaths = (await getHostImageXpath(productUrl)).map(row => row?.xpath);
 
-               let imageUrls = await Promise.all(image_xpaths.map(async _xpath => {
+               // let imageUrls = await Promise.all(image_xpaths.map(async _xpath => {
                     
-                    try {
-                         await page.waitForXPath(_xpath, { timeout: 5000 });
-                    } catch (error) {
+               //      try {
+               //           await page.waitForXPath(_xpath, { timeout: 5000 });
+               //      } catch (error) {
 
-                    }
+               //      }
 
-                    const imageElements = await page.$x(_xpath);
+               //      const imageElements = await page.$x(_xpath);
                 
-                    // Get the src attribute of each image element found by the XPath
-                    const srcUrls = await Promise.all(imageElements.map(async element => {
-                        let src = await page.evaluate(el => el.getAttribute('src')?.replace(/(-[0-9]+x[0-9]+)/g, ""), element);
-                        return src;
-                    }));
+               //      // Get the src attribute of each image element found by the XPath
+               //      const srcUrls = await Promise.all(imageElements.map(async element => {
+               //          let src = await page.evaluate(el => el.getAttribute('src')?.replace(/(-[0-9]+x[0-9]+)/g, ""), element);
+               //          return src;
+               //      }));
                 
-                    return srcUrls;
-               }));
-               imageUrls = imageUrls.flat();
-               imageUrls = [...new Set(imageUrls)];
-               imageUrls = imageUrls.map(url => {
-                    if (!url?.includes('http') && !url?.includes('https')) return `https://www.${hostName}${url}`;
-                    return url
-               })
+               //      return srcUrls;
+               // }));
+               // imageUrls = imageUrls.flat();
+               // imageUrls = [...new Set(imageUrls)];
+               // imageUrls = imageUrls.map(url => {
+               //      if (!url?.includes('http') && !url?.includes('https')) return `https://www.${hostName}${url}`;
+               //      return url
+               // })
 
-               console.log("number of image xpaths :", image_xpaths.length);
-               console.log("number of imageUrls :", imageUrls.length);
-               console.log("Downloading Images ...");
-               console.log("imageUrls : ",imageUrls);
+               // console.log("number of image xpaths :", image_xpaths.length);
+               // console.log("number of imageUrls :", imageUrls.length);
+               // console.log("Downloading Images ...");
+               // console.log("imageUrls : ",imageUrls);
 
-               await downloadImages(imageUrls, imagesDIR, sku);
+               // await downloadImages(imageUrls, imagesDIR, sku);
           }
-
-          
 
      } catch (error) {
           console.log("Error In proccessProductUrl :", error);
@@ -438,17 +426,15 @@ async function main() {
 
 
                // get random proxy
-               const proxyList = ['37.114.204.14:8080'];
+               const proxyList = [''];
                const randomProxy = getRandomElement(proxyList);
-               console.log('proxy ',randomProxy)
+    
                // Lunch Browser
                browser = await getBrowser(randomProxy, true, false);
 
 
                // Find Product Urls 
-
                const validProductUrls = (await getProductUrlsFromGoogle(browser, productName, GOOGLE)).slice(0, 10);
-               
                await(delay(2000))
                
 
