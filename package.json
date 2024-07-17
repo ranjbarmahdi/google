@@ -20,7 +20,7 @@
     "omit-empty": "^1.0.0",
     "os-utils": "^0.0.14",
     "pg-promise": "^11.5.4",
-    "puppeteer": "^19.7.2",
+    "puppeteer": "^22.6.4",
     "uuid": "^9.0.1",
     "xlsx": "^0.18.5"
   }

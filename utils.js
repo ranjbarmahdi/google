@@ -1,5 +1,7 @@
 const { createObjectCsvWriter } = require("csv-writer")
 const puppeteer = require("puppeteer");
+const { v4: uuidv4 } = require("uuid");
+const fetch = require('node-fetch');
 const csv = require('csv-parser');
 const { URL } = require('url');
 const reader = require('xlsx');
@@ -95,20 +97,23 @@ const getRandomElement = (array) => {
 async function downloadImages(imagesUrls, imagesDIR, uuid) {
     for (let i = 0; i < imagesUrls.length; i++) {
         try {
-
             const imageUrl = imagesUrls[i];
             const response = await fetch(imageUrl);
-            if (response.status == 200) {
 
+            if (response.status === 200) {
                 const buffer = await response.buffer();
-                let imageType = path.extname(imageUrl);
-                if (!imageType) {
-                    imageType = '.jpg'
+
+                // Determine image type based on URL
+                let imageType = '.jpg'; // default
+                const imageExtensionMatch = imageUrl.match(/\.(jpg|jpeg|png|webp|gif|bmp|tiff|svg|ico)$/i);
+                if (imageExtensionMatch) {
+                    imageType = imageExtensionMatch[0];
                 }
-                const localFileName = `${uuid}-${i + 1}${imageType}`;
-                const imageDir = path.normalize(
-                    imagesDIR + "/" + localFileName
-                );
+
+                // Generate uuidv4
+                const shortUuid = uuidv4()?.replace(/-/g, "")?.slice(0, 4);
+                const localFileName = `${uuid}-${shortUuid}${imageType}`;
+                const imageDir = path.normalize(path.join(imagesDIR, localFileName));
                 fs.writeFileSync(imageDir, buffer);
             }
         } catch (error) {
@@ -253,7 +258,6 @@ function checkMemoryUsage() {
     return memoryUsagePercent;
 }
 
-
 // ============================================ getCpuUsagePercentage
 function getCpuUsagePercentage() {
     const cpus = os.cpus();
@@ -270,6 +274,20 @@ function getCpuUsagePercentage() {
     return ((1 - totalIdle / totalTick) * 100);
 }
 
+
+// ============================================ checkMemoryCpu
+async function checkMemoryCpu(memoryUsagePercent, cpuUsagePercent, memoryUsageGig){
+    const usageMemory = (os.totalmem() - os.freemem()) / (1024 * 1024 * 1024);
+    const memoryUsagePercentage = checkMemoryUsage();
+    const cpuUsagePercentage = getCpuUsagePercentage();
+
+    const cond_1 = memoryUsagePercentage <= memoryUsagePercent 
+    const cond_2 = cpuUsagePercentage <= cpuUsagePercent
+    const cond_3 = usageMemory <= memoryUsageGig
+    return cond_1 && cond_2 && cond_3
+}
+
+
 module.exports = {
     writeExcel,
     readCsv,
@@ -285,7 +303,8 @@ module.exports = {
     isValidURL,
     getHostNameFromUrl,
     checkMemoryUsage,
-    getCpuUsagePercentage
+    getCpuUsagePercentage,
+    checkMemoryCpu
 }
 
 

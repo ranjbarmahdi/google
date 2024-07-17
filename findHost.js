@@ -115,7 +115,7 @@ async function getProductUrlsFromGoogle(page, productName, url) {
      let UniqueHosts = [];
      try {
           await page.goto(url, { timeout: 180000 });
-          await delay(5000);
+          await delay(3000);
 
           // Find Google Search Bar
           const textArea = await page.$$('textarea.gLFyf');
@@ -171,6 +171,8 @@ async function main() {
      try {
           const GOOGLE = 'https://www.google.com/'
 
+          await delay(Math.random()*6000);
+
           // Get Product Name From Db And Remove it From Unvisited
           product = await removeProductName();
           if (product) {
@@ -184,7 +186,7 @@ async function main() {
 
 
                // Lunch Browser
-               browser = await getBrowser(randomProxy, true, false);
+               browser = await getBrowser(randomProxy, false, false);
                page = await browser.newPage();
                await page.setViewport({
                     width: 1440,
@@ -230,9 +232,6 @@ async function main() {
 }
 
 
-
-
-
 let usageMemory = (os.totalmem() - os.freemem()) / (1024 * 1024 * 1024);
 let memoryUsagePercentage = checkMemoryUsage();
 let cpuUsagePercentage = getCpuUsagePercentage();
@@ -269,4 +268,4 @@ async function main_2(){
      }
 }
 
-main();
+main_2();

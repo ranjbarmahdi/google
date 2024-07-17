@@ -1,13 +1,15 @@
 version: '3.7'
 
 services:
-  node-app:
+  node-app-1:
     user: root
-    # restart: always
+    restart: always
     build:
       context: .
     ports:
       - "4000-4500:4008"
+    volumes:
+      - ./images:/usr/src/app/images
     networks:
       - custom_network
 
