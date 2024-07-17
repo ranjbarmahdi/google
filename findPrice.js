@@ -210,6 +210,9 @@ async function getProductUrlsFromGoogle(browser, productName, url) {
           await page.goto(url, { timeout: 180000 });
           await delay(5000);
 
+
+          await page.screenshot({ path: './beforeType.png' });
+
           // Find Google Search Bar
           const textArea = await page.$$('textarea.gLFyf');
           if (textArea.length) {
@@ -218,9 +221,13 @@ async function getProductUrlsFromGoogle(browser, productName, url) {
                await textArea[0].type(productName);
                await delay(2000)
 
+               await page.screenshot({ path: './afterType.png' });
+
                // Press Enter
                await page.keyboard.press('Enter');
                await delay(5000)
+
+               await page.screenshot({ path: './afterEnter.png' });
 
                // Load Cheerio
                const html = await page.content();
@@ -324,7 +331,7 @@ async function proccessProductUrl(browser, productUrl, productName) {
                await page.goto(productUrl, { timeout: 180000 });
                await delay(2000);
 
-               await page.screenshot({ path: './example.png' });
+               
 
                // Find Prodcut id From Vardast DB
                const {id: productId, sku} = await getProductFromVardast(productName) || {};
