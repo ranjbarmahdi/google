@@ -438,7 +438,7 @@ async function main() {
 
 
                // Lunch Browser
-               browser = await getBrowser(randomProxy, true, false);
+               browser = await getBrowser(randomProxy, true, true);
 
                
 
