@@ -204,7 +204,7 @@ const getBrowser = async (proxyServer, headless = true, withProxy = true) => {
             args: args(withProxy),
             protocolTimeout: 6000000
         });
-
+        console.log('browser',browser)
         return browser;
     }
     catch (error) {
