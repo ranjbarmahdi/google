@@ -262,6 +262,12 @@ async function getPrice(page, xpaths, currency, productName) {
           // Find Price 
           for (const _xpath of xpaths) {
                try {
+                    try {
+                         await page.waitForXPath(_xpath, { timeout: 5000 });
+                    } catch (error) {
+
+                    }
+                    
                     const priceElements = await page.$x(_xpath);
                     for(const priceElem of priceElements){
                          try {
@@ -345,10 +351,17 @@ async function proccessProductUrl(browser, productUrl, productName) {
                     
                }
 
-               // If Host Has Images Xpaths, Download Its Images
-               
+               // If Host Has Images Xpaths, Download Its Image
                const image_xpaths = (await getHostImageXpath(productUrl)).map(row => row?.xpath);
+
                let imageUrls = await Promise.all(image_xpaths.map(async _xpath => {
+                    
+                    try {
+                         await page.waitForXPath(_xpath, { timeout: 5000 });
+                    } catch (error) {
+
+                    }
+
                     const imageElements = await page.$x(_xpath);
                 
                     // Get the src attribute of each image element found by the XPath
@@ -361,6 +374,10 @@ async function proccessProductUrl(browser, productUrl, productName) {
                }));
                imageUrls = imageUrls.flat();
                imageUrls = [...new Set(imageUrls)];
+               imageUrls = imageUrls.map(url => {
+                    if (!url?.includes('http') && !url?.includes('https')) return `https://www.${hostName}${url}`;
+                    return url
+               })
 
                console.log("number of image xpaths :", image_xpaths.length);
                console.log("number of imageUrls :", imageUrls.length);
@@ -412,7 +429,7 @@ async function main() {
 
 
                // Lunch Browser
-               browser = await getBrowser(randomProxy, true, false);
+               browser = await getBrowser(randomProxy, True, false);
 
 
                // Find Product Urls 
