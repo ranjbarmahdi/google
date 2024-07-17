@@ -324,6 +324,8 @@ async function proccessProductUrl(browser, productUrl, productName) {
                await page.goto(productUrl, { timeout: 180000 });
                await delay(2000);
 
+               await page.screenshot({ path: './example.png' });
+
                // Find Prodcut id From Vardast DB
                const {id: productId, sku} = await getProductFromVardast(productName) || {};
 
