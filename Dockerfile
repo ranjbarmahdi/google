@@ -23,4 +23,4 @@ COPY . .
 EXPOSE 5050
 
 # Change the CMD to run your desired Node.js script
-CMD ["node","app.js"]
+CMD ["node","findPrice.js"]
