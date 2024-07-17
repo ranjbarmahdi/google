@@ -205,7 +205,7 @@ async function getProductUrlsFromGoogle(browser, productName, url) {
                width: 1440,
                height: 810,
           });
-
+          console.log("before goto");
           // Go To Url
           await page.goto(url, { timeout: 180000 });
           await delay(5000);
