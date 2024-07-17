@@ -429,7 +429,7 @@ async function main() {
 
 
                // Lunch Browser
-               browser = await getBrowser(randomProxy, True, false);
+               browser = await getBrowser(randomProxy, true, false);
 
 
                // Find Product Urls 
