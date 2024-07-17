@@ -210,7 +210,7 @@ async function getProductUrlsFromGoogle(browser, productName, url) {
           await page.goto(url, { timeout: 180000 });
           await delay(5000);
 
-
+          console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaa");
           await page.screenshot({ path: './beforeType.png' });
 
           // Find Google Search Bar
@@ -433,13 +433,14 @@ async function main() {
 
 
                // get random proxy
-               const proxyList = ['vless://5c325890-09a7-4903-9f4c-9de2ad856597@irancell4donyabatokhobeagetonabashidonyabimanyebiabahambashim.gangesterersho.de:443?type=ws&path=%2F&host=hame6donyabatokhobeagetonabashidonyabimanyebiabahambashim.gangesterersho.de.&security=tls&fp=chrome&alpn=h2%2Chttp%2F1.1&allowInsecure=1#Vip6%F0%9F%87%A9%F0%9F%87%AA-M_R'];
+               const proxyList = ['37.114.204.14:8080'];
                const randomProxy = getRandomElement(proxyList);
 
 
                // Lunch Browser
-               browser = await getBrowser(randomProxy, true, true);
+               browser = await getBrowser(randomProxy, true, false);
 
+               
 
                // Find Product Urls 
                const validProductUrls = (await getProductUrlsFromGoogle(browser, productName, GOOGLE)).slice(0, 10);
