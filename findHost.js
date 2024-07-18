@@ -41,25 +41,35 @@ async function removeProductName() {
 // ============================================ insertHost
 async function insertHost(host) {
      const existsQuery = `
-          SELECT * FROM host h
-          where h."host"=$1
-     `
-
-     const query = `
-          insert into host ("host")
-          values ($1)
+         SELECT * FROM host h
+         WHERE h."host" = $1
      `;
-
+ 
+     const insertQuery = `
+         INSERT INTO host ("host", "view_count")
+         VALUES ($1, 1)
+         RETURNING *
+     `;
+ 
+     const updateQuery = `
+         UPDATE host
+         SET "view_count" = "view_count" + 1
+         WHERE "host" = $1
+     `;
+ 
      try {
-          const urlInDb = await db.oneOrNone(existsQuery, [host]);
-          if (!urlInDb) {
-               const result = await db.oneOrNone(query, [host]);
-               return result;
-          }
+         const urlInDb = await db.oneOrNone(existsQuery, [host]);
+         if (!urlInDb) {
+             const result = await db.one(insertQuery, [host]);
+             return result;
+         } else {
+             await db.query(updateQuery, [host]);
+         }
      } catch (error) {
-          console.log("Error in insertHost :", error.message);
+         console.log("Error in insertHost:", error.message);
      }
-}
+ }
+ 
 
 
 // ============================================ insertToProblem
@@ -195,7 +205,7 @@ async function main() {
 
                
                // Find Hosts
-               const hosts = (await getProductUrlsFromGoogle(page, productName, GOOGLE)).slice(0, 5);
+               const hosts = (await getProductUrlsFromGoogle(page, productName, GOOGLE)).slice(0, 10);
                
 
                // Add Hosts To host Table
