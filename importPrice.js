@@ -157,8 +157,7 @@ async function main() {
                }
 
                offset += batchSize;
-               console.log(`================= ${i} from ${totalCount}`);
-               i++;
+               console.log(`================= ${i++} from ${totalCount}`);
           } catch (error) {
                console.log("Error in while: ", error);
           }
