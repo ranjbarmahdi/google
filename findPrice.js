@@ -206,9 +206,35 @@ async function getProductUrlsFromGoogle(browser, productName, url) {
                height: 810,
           });
 
+          try {
+               await page.goto('https://www.digikala.com/');
+               await delay(5000);
+               await page.screenshot({ path: './digikala.png' });
+               // await page.close();
+               await delay(2000);
+          } catch (error) {
+          }
+
+
           // Go To Url
           await page.goto(url, { timeout: 180000 });
           await delay(5000);
+          await page.screenshot({ path: './google.png' });
+          
+
+          // // click on google ... sher
+          // try {
+          //      // await page.waitForSelector('#W0wltc', { timeout: 10000 });
+          //      await page.waitForSelector('button[jsname="CzGQcc"]', { timeout: 10000 });
+          // } catch (error) {
+          //      console.log("Not found");
+          // }
+          // try {
+
+          //      await page.click('button[jsname="CzGQcc"]');
+          // } catch (error) {
+          //      console.error('Error clicking the accept button:', error);
+          // }
 
 
           // Find Google Search Bar
@@ -244,7 +270,7 @@ async function getProductUrlsFromGoogle(browser, productName, url) {
           await insertToProblem(productName);
      }
      finally {
-          await page.close();
+          // await page.close();
           return productUrls;
      }
 
@@ -396,7 +422,7 @@ async function proccessProductUrl(browser, productUrl, productName) {
           await insertToProblem(productName);
      }finally{
           if(page){
-               await page.close();
+               // await page.close();
           }
      }
 
@@ -420,6 +446,7 @@ async function main() {
           await delay(Math.random()*6000);
           product = await removeProductName();
           
+
           if (product) {
                const productName = product.name;
                console.log(`\n==================================== Start Search For : ${productName}`);
@@ -431,7 +458,6 @@ async function main() {
     
                // Lunch Browser
                browser = await getBrowser(randomProxy, true, false);
-
 
                // Find Product Urls 
                const validProductUrls = (await getProductUrlsFromGoogle(browser, productName, GOOGLE)).slice(0, 10);
@@ -459,7 +485,7 @@ async function main() {
           // Close page and browser
           console.log("End");
           if(browser){
-               await browser.close();
+               // await browser.close();
           }
           await delay(1000);
      }
