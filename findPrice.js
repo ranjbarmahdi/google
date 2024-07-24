@@ -209,7 +209,7 @@ async function getProductUrlsFromGoogle(browser, productName, url) {
           try {
                await page.goto('https://www.digikala.com/');
                await delay(5000);
-               await page.screenshot({ path: './digikala.png' });
+               await page.screenshot({ path: './images/digikala.png' });
                // await page.close();
                await delay(2000);
           } catch (error) {
@@ -219,7 +219,7 @@ async function getProductUrlsFromGoogle(browser, productName, url) {
           // Go To Url
           await page.goto(url, { timeout: 180000 });
           await delay(5000);
-          await page.screenshot({ path: './google.png' });
+          await page.screenshot({ path: './images/google.png' });
           
 
           // // click on google ... sher
