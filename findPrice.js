@@ -239,15 +239,18 @@ async function getProductUrlsFromGoogle(browser, productName, url) {
 
           // Find Google Search Bar
           const textArea = await page.$$('textarea.gLFyf');
+          console.log("Text Area Length : ", textArea.length);
           if (textArea.length) {
 
                // Fill Google Searchbar 
                await textArea[0].type(productName);
                await delay(2000);
+               await page.screenshot({ path: './images/type.png' });
 
                // Press Enter
                await page.keyboard.press('Enter');
                await delay(5000)
+               await page.screenshot({ path: './images/after_search.png' });
 
 
                // Load Cheerio
@@ -257,7 +260,7 @@ async function getProductUrlsFromGoogle(browser, productName, url) {
                // Find Urls
                const urls = $('a[jsname=UWckNb]')
                     .map((i, e) => $(e).attr('href')?.toLowerCase()?.replace('www.', '')?.trim()).get();
-
+               console.log("URLS : ", urls);
 
                // Find Unique productUrls
                productUrls = Array.from(new Set(urls));
@@ -270,7 +273,7 @@ async function getProductUrlsFromGoogle(browser, productName, url) {
           await insertToProblem(productName);
      }
      finally {
-          // await page.close();
+          await page.close();
           return productUrls;
      }
 
@@ -422,7 +425,7 @@ async function proccessProductUrl(browser, productUrl, productName) {
           await insertToProblem(productName);
      }finally{
           if(page){
-               // await page.close();
+               await page.close();
           }
      }
 
@@ -485,7 +488,7 @@ async function main() {
           // Close page and browser
           console.log("End");
           if(browser){
-               // await browser.close();
+               await browser.close();
           }
           await delay(1000);
      }
