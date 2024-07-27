@@ -394,7 +394,7 @@ async function main() {
             const randomProxy = getRandomElement(proxyList);
 
             // Lunch Browser
-            browser = await getBrowser(randomProxy, false, false);
+            browser = await getBrowser(randomProxy, true, false);
 
             // Find Product Urls
             const validProductUrls = (
