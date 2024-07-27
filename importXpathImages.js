@@ -28,7 +28,9 @@ async function insertXpath(hostid, xpath) {
 
 async function main(){
     const xpaths = await readCsv(input);
-    
+
+    let i = 1;
+    const totalLength = xpaths.length;
     for(const xpath of xpaths){
         try {
             if(xpath.xpath?.trim()){
@@ -38,6 +40,8 @@ async function main(){
                 ];
     
                 await insertXpath(...insertInput);
+                 console.log(`====================== ${i++} from ${totalLength}`);
+
                 await delay(150)
             }
         } catch (error) {

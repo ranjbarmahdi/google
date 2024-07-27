@@ -12,7 +12,8 @@ const os = require('os');
 // ============================================ getAllPrice
 async function getPrice(offset, batchSize) {
      const query = `
-     SELECT * FROM price
+     SELECT * FROM price p
+     ORDER BY p."id" ASC
      LIMIT ${batchSize}
      OFFSET ${offset}
     `
@@ -44,6 +45,7 @@ async function getPriceTotalCount() {
 
 // ============================================ existsProductOffer
 async function existsProductOffer(sellerid, productid) {
+     let exists = false;
      const existsProductOfferQuery = `
           select *
           from product_offers po 
@@ -53,27 +55,26 @@ async function existsProductOffer(sellerid, productid) {
      try {
           const row = await dbv.oneOrNone(existsProductOfferQuery, [sellerid, productid]);
           if (row) {
-               return true;
-          }
-          else {
-               return false;
+               exists = true;
           }
      } catch (error) {
           console.log("Error in existsProductOffer :", error);
+     }
+     finally {
+          return exists;
      }
 
 }
 
 
 // ============================================ createProductOffer
-async function createProductOffer(sellerid, productid) {
+async function createProductOffer(sellerid, productid, url) {
      const createProductOfferQuery = `
-          INSERT INTO product_offers ("productId", "sellerId")
-          VALUES ($1, $2)
-          RETURNING *;
-          `;
+          INSERT INTO product_offers ("productId", "sellerId", "url")
+          VALUES ($1, $2, $3)
+          RETURNING *;`;
      try {
-          await dbv.one(createProductOfferQuery, [productid, sellerid]);
+          await dbv.one(createProductOfferQuery, [productid, sellerid, url]);
      } catch (error) {
           console.log("Error in createProductOffer :", error);
      }
@@ -98,16 +99,19 @@ async function createProductPrice(productid, sellerid, amount, isPublic, created
 
 
 // ============================================ createProductOffer
-async function updateOfferUrl(productid, sellerid) {
+async function updateOfferUrl(productid, sellerid, url) {
+     console.log("update pffer : ", productid, sellerid);
      const updateOfferUrlQuery = `
-     update product_offers 
-     set "url" = $3
-     where "productId" = $1 and "sellerId" = $2
+          update product_offers 
+          set "url" = $3,
+          "createdAt" = NOW()
+          where "productId" = $1 and "sellerId" = $2;
      `
      try {
-          await dbv.one(updateOfferUrlQuery, [productid, sellerid]);
+          await dbv.query(updateOfferUrlQuery, [productid, sellerid, url]);
+
      } catch (error) {
-          console.log("Error in createProductPrice :", error);
+          console.log("Error in updateOfferUrl :", error);
      }
 
 }
@@ -124,34 +128,39 @@ async function main() {
      console.log("total count :", totalCount);
 
      
+ 
+     let i = 1
      while (offset < totalCount) {
-          const {
-               id,
-               url,
-               xpath,
-               amount,
-               productid,
-               sellerid,
-               createdat,
-          } = await getPrice(offset, batchSize);
+          try {
+               let {
+                    id,
+                    url,
+                    xpath,
+                    amount,
+                    productid,
+                    sellerid,
+                    createdat,
+               } = await getPrice(offset, batchSize);
 
+               amount = parseInt(amount, 10) / 10;
+               createdat = new Date();
 
+               if (amount != 0 && !isNaN(amount)) {
+                    await createProductPrice(productid, sellerid, amount, true, 1)
+               }
 
-          
-          if (amount != 0) {
-               await createProductPrice(productid, sellerid, amount, true, 1)
+               const existsOffer = await existsProductOffer(sellerid, productid);
+               if (existsOffer) {
+                    await updateOfferUrl(productid, sellerid, url)
+               } else {
+                    await createProductOffer(sellerid, productid, url);
+               }
+
+               offset += batchSize;
+               console.log(`================= ${i++} from ${totalCount}`);
+          } catch (error) {
+               console.log("Error in while: ", error);
           }
-
-
-          // const existsOffer = await existsProductOffer(sellerid, productid);
-
-          await createProductOffer(sellerid, productid);
-
-
-
-          offset += batchSize;
-
-          await delay(500)
      }
 }
 

@@ -18,6 +18,9 @@ async function updateHost(updateInput) {
 async function main(){
     const hosts = await readCsv(input);
     
+    let i = 1;
+    const totalLength = hosts.length;
+
     for(const host of hosts){
         try {
             const updateInput = [
@@ -28,6 +31,7 @@ async function main(){
                 host.black || null
              ]
             await updateHost(updateInput);
+            console.log(`====================== ${i++} from ${totalLength}`);
             await delay(200)
         } catch (error) {
             console.log("Error in main for loop : ", error);

@@ -53,9 +53,8 @@ async function main(){
             for(const row of csv){
                 console.log(`============= ${counter} from ${total}`);
                 const productName = row.name || row['نام'] || null;
-                if(productName) insertProductNamesToUnvisited(productName);
+                if(productName) await insertProductNamesToUnvisited(productName);
                 counter ++;
-                await delay(300)
             }
         } catch (error) {
             console.log("Error in main function :", error);
